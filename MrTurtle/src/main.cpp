@@ -9,7 +9,6 @@ auto main() -> int {
 
   // initialize window
   InitWindow(screen_width, screen_height, "Mr Turtle");
-  Vector2 player_position = {50, 200};
   SetTargetFPS(60);
 
   Game *game = new (std::nothrow) Game();
