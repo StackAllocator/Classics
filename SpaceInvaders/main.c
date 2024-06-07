@@ -165,8 +165,8 @@ int main() {
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
     update_draw_frame();
-    UpdateMusicStream(intro_music);
-    PlayMusicStream(intro_music);
+    // UpdateMusicStream(intro_music);
+    // PlayMusicStream(intro_music);
   }
   
   // cleanup

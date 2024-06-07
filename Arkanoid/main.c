@@ -226,10 +226,11 @@ void update()
               brick_size
             }
           )
-        )
-        bricks[i][j].active = false;
+        ) {
+          bricks[i][j].active = false;
           ball.horizontal_speed *= -1;
           ball.vertical_speed *= -1;
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <stdlib.h>
 
 #define MAX_SPIKES_RIGHT 10
 #define MAX_SPIKES_LEFT  10
@@ -7,7 +8,6 @@
 // player structure definition
 typedef struct Player {
   Rectangle rec;
-  Color color;
 } Player;
 
 
@@ -40,7 +40,6 @@ static float horizontal_velocity = 150.f;
 static float vertical_velocity   = 200.f;
 static int left_score;
 static int right_score;
-static bool wall_hit = false;
 static bool move_upward = false;
 static GameStates current_state = START;
 
@@ -106,15 +105,14 @@ void init() {
   background_texture = LoadTextureFromImage(board);
   UnloadImage(board);
 
-  font = LoadFont("./jupiter_crash.png");
+  font = LoadFont("./Assets/jupiter_crash.png");
 
-  bird = LoadTexture("./bird.png");
-  cake = LoadTexture("./cake.png");
+  bird = LoadTexture("./Assets/bird.png");
+  cake = LoadTexture("./Assets/cake.png");
 
   player.rec.width = player.rec.height = 64;
   player.rec.x = screen_width / 2.f - player.rec.width / 2.f;
   player.rec.y = screen_height / 2.f;
-  player.color = PURPLE;
 
   for (int i = 0; i < MAX_SPIKES_LEFT; ++i) {
     left_spikes[i].active = false;
@@ -139,7 +137,7 @@ void unload_textures() {
 }
 
 
-// draw the starting screen
+// Draw the starting screen.
 void draw_start() {
 
   DrawCircle(screen_width / 2.f, screen_height / 2.f + 60, 150, circle_color);
@@ -151,7 +149,7 @@ void draw_start() {
   DrawRectangleRec((Rectangle){0, 0, screen_width, 50}, spikes_color);
   DrawRectangleRec((Rectangle){0, screen_height - 50, screen_width, 50}, spikes_color);
 
-  // draw the spikes on the top and on the bottom
+  // Draw the spikes on the top and on the bottom.
   for (int i = 20; i <= screen_width - 100; i += 50) {
     DrawRectanglePro((Rectangle){i + 50, 0, 60, 60}, (Vector2){0, 0}, 45, spikes_color);
     DrawRectanglePro((Rectangle){i + 50, screen_height - 80, 60, 60}, (Vector2){0, 0}, 45, spikes_color);
@@ -178,26 +176,29 @@ void start() {
 }
 
 // Handle update screen logic:
-// check for collision between player and spikes
-// mirror player sprite if wall is touched
-
 void update() {
 
   ClearBackground(RAYWHITE);
   draw_update();
-  // check collision spikes
+  // Reset the game bird hits spikes.
   if (player.rec.y < 100 || player.rec.y + player.rec.height > screen_height - 100) {
-    player.rec.x = screen_width / 2.f;
+
+    player.rec.x = screen_width / 2.f - player.rec.width / 2.f;
     player.rec.y = screen_height / 2.f;
+
+    source_bird.width = abs(source_bird.width);
+    horizontal_velocity = abs(horizontal_velocity);
+    vertical_velocity = 200.f;
+
     source_bird.x = source_bird.y = 0;
 
     left_score = right_score = 0; // reset score
     current_state = START;
   }
 
-
+  // Check for collision between player and spikes.
+  // Mirror player sprite if wall is touched.
   if (player.rec.x <= 0 || player.rec.x >= screen_width - player.rec.width) {
-    wall_hit = true;
     horizontal_velocity *= -1;
     source_bird.width = -source_bird.width;
   }
@@ -213,11 +214,9 @@ void update() {
     coin.y = GetRandomValue(250, screen_height - 300);
   }
 
-
   player.rec.x += horizontal_velocity * GetFrameTime();
 
-  if (wall_hit) {
-    wall_hit = false;
+  if (CheckCollisionRecs(player.rec, coin)) {
     if (right_score == 9) {
       right_score = 0;
       left_score += 1;
@@ -228,23 +227,23 @@ void update() {
   }
 }
 
-// draw update screen
+// Draw update screen
 void draw_update() {
 
 
-  // draw background
+  // Draw background
   DrawTexture(background_texture, 0, 0, WHITE);
   DrawCircle(screen_width / 2.f, screen_height / 2.f, 70, (Color){179, 185, 209, 255});
 
-  // draw score
+  // Draw score
   DrawText(TextFormat("%d", left_score), screen_width / 2.f - 25, screen_height / 2.f - 25, 50, RAYWHITE);
   DrawText(TextFormat("%d", right_score), screen_width / 2.f + 5, screen_height / 2.f - 25, 50, RAYWHITE);
 
-  // draw bird and obstacle
+  // Draw bird and obstacle
   DrawTexturePro(bird, source_bird, player.rec, (Vector2){0, 0}, 0, WHITE);
   DrawTexture(cake, coin.x - cake.width / 2.f + 10, coin.y - 10, WHITE);
 
-  // draw spikes
+  // Draw spikes
   for (int i = 0; i <= screen_width; i += 40) {
     DrawRectanglePro((Rectangle){i, 50, 40, 40}, (Vector2){0, 0}, 45, spikes_color);
     DrawRectanglePro((Rectangle){i, screen_height - 100, 40, 40}, (Vector2){0, 0}, 45, spikes_color);
@@ -253,4 +252,3 @@ void draw_update() {
   DrawRectangle(0, 0, screen_width, 80, spikes_color);
   DrawRectangle(0, screen_height - 80, screen_width, 100, spikes_color);
 }
-
