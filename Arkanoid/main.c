@@ -39,6 +39,7 @@ typedef struct Ball
 
 static const int screen_width  = 1200;
 static const int screen_height = 800;
+static int lives = 5;
 
 static Paddle paddle;
 static Ball   ball;
@@ -51,6 +52,7 @@ static Color current_color;
 
 static bool toggle_color = false;
 static bool ball_move    = false;
+static bool collides     = false;
 
 // -------------------------------------------------------------------------
 // Module Function Forward Declarations
@@ -61,7 +63,9 @@ static void draw_player(void); // Draw ball and paddle
 static void draw_bricks(void); // Draw bricks
 static void update(void);      // Update the game logic
 
-
+// -------------------------------------------------------------------------
+// Program main entry point.
+// -------------------------------------------------------------------------
 int main()
 {
   // ------------------------------------------------------------------------
@@ -112,12 +116,12 @@ void init()
   };
   ball.color = RED;
 
-  // initialize bricks
+  // Initialize bricks.
   for (int i = 0; i < COLUMNS; ++i)
   {
     for (int j = 0; j < ROWS; ++j)
     {
-      bricks[i][j].active = true; // activate all bricks
+      bricks[i][j].active = true; // Activate all bricks.
       bricks[i][j].position = (Vector2){i * brick_size, j * brick_size};
     }
   }
@@ -125,9 +129,9 @@ void init()
 
 void draw_player()
 {
-  // draw the paddle
+  // Draw the paddle.
   DrawRectangleRec(paddle.rec, BLACK);
-  // draw the ball
+  // Draw the ball.
   DrawCircleV(ball.position, ball.size, ball.color);
 }
 
@@ -135,13 +139,12 @@ void draw_bricks()
 {
   ClearBackground(WHITE); 
 
-  // draw colored bricks if they are active (active by default)
+  // Draw colored bricks if they are active (active by default)
 
   for (int i = 0; i < COLUMNS; ++i)
   {
     for (int j = 0; j < ROWS; ++j)
     {
-      // toggle between colors
       current_color = toggle_color ? brick_color[0] : brick_color[1];
       toggle_color = !toggle_color;
 
@@ -157,10 +160,24 @@ void draw_bricks()
       }
     }
   }
+  for (int i = 0; i < lives; ++i)
+  {
+    DrawRectangleRec((Rectangle){15 + 50 * i, screen_height - 40, 40, 15}, LIGHTGRAY);
+  }
 }
 
 void update()
 {
+  if (lives == 0)
+  {
+    if (IsKeyPressed(KEY_ENTER))
+    {
+      lives = 5;
+    }
+    DrawText("You died!", 500, 400, 40, BLACK);
+    DrawText("Press [ENTER] to play again!", 430, screen_height - 50, 25, BLACK);
+    return;
+  }
   // ----------------------------------------------------------------------
   // Limit paddle (player) so it can't get out of bounds
   if (paddle.rec.x <= 0)
@@ -194,11 +211,11 @@ void update()
       ball.horizontal_speed *= -1;
     }
 
-    // update ball x, y coordinates
+    // Update ball x, y coordinates
     ball.position.x += ball.horizontal_speed * delta;
     ball.position.y += ball.vertical_speed * delta;
 
-    // reverse horizontal_speed of ball when left or right wall has been hit
+    // Reverse horizontal_speed of ball when left or right wall has been hit
     if (ball.position.x <= ball.size || ball.position.x >= screen_width - ball.size)
       ball.horizontal_speed *= -1;
 
@@ -207,14 +224,22 @@ void update()
 
     else if (ball.position.y >= screen_height - ball.size)
     {
+      lives--;
       init();
       ball_move = false;
     }
 
+    if (collides)
+    {
+      collides = false;
+    }
+
     for (int i = 0; i < COLUMNS; ++i)
     {
-      for (int j = 0; j < ROWS; ++j) {
-        if (bricks[i][j].active
+      for (int j = 0; j < ROWS; ++j)
+      {
+        if (bricks[i][j].active && !collides)
+          /*
           && CheckCollisionCircleRec(
             ball.position,
             ball.size,
@@ -226,10 +251,35 @@ void update()
               brick_size
             }
           )
-        ) {
-          bricks[i][j].active = false;
-          ball.horizontal_speed *= -1;
-          ball.vertical_speed *= -1;
+          */
+        {
+          // Hit above
+          if ((ball.position.y - ball.size) <= (bricks[i][j].position.y + brick_size / 2))
+          {
+	    collides = true;
+            bricks[i][j].active = false;
+            ball.vertical_speed *= -1;
+          }
+          /*
+          // Hit below
+          else if (true) {
+	    collides = true;
+            bricks[i][j].active = false;
+            ball.vertical_speed *= -1;
+          }
+          // Hit left
+          else if (true) {
+	    collides = true;
+            bricks[i][j].active = false;
+            ball.horizontal_speed *= -1;
+          }
+          // Hit right
+          else if (true) {
+	    collides = true;
+            bricks[i][j].active = false;
+            ball.horizontal_speed *= -1;
+          }
+           */
         }
       }
     }
