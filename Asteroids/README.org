@@ -1,0 +1,25 @@
+This project is WIP.
+
+#+TITLE: Asteroids Game
+
+* Description
+
+A classic arcade-style space shooter where you navigate through an asteroid field, avoiding collisions and blasting asteroids to survive!
+
+* Features
+
+  - Intuitive Controls: Simple controls for easy navigation and shooting.
+  - Endless Space: Navigate through an ever-expanding asteroid field.
+  - Power-ups: Collect power-ups to enhance your spaceship and weapons.
+
+* Screenshots
+
+
+* Installation
+
+
+* Clone the Repository:
+
+  git clone https://github.com/StackAllocator/asteroids-game.git
+  cd asteroids-game
+  sh build.sh
